@@ -6,6 +6,9 @@ using Microsoft.AspNetCore.Mvc;
 using API.Models.DTOs;
 using API.Models.Entities;
 using API.Models;
+using Microsoft.EntityFrameworkCore;
+
+
 
 namespace API.Controllers
 {
@@ -27,6 +30,17 @@ namespace API.Controllers
             return Ok(_context.User);
         }
 
+
+        //TODO: set limit of returned images to 10
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetUser(string id)
+        {
+            var user = _context.User
+                            //.FindAsync(new Guid(id));
+                            .Include(x => x.Images)
+                            .FirstOrDefault(x => x.Id.Equals(new Guid(id)));
+            return Ok(user);
+        }
 
         [HttpPost]
         public async Task<IActionResult> AddUser([FromQuery] string name, string email) //post request - must send me the RegisterDto
