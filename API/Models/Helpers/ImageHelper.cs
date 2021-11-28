@@ -10,8 +10,8 @@ namespace API.Models.Helpers
     {
         public static IEnumerable<string> GetTags(string imageUrl)
         {
-            string apiKey = "Your api key goes here";
-            string apiSecret = "Your api secret goes here";
+            string apiKey = "acc_4bcd1141e49d3fc";
+            string apiSecret = "da2c96099d330fbd724a10e131aacae4";
             string basicAuthValue = System.Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(String.Format("{0}:{1}", apiKey, apiSecret)));
             var client = new RestClient("https://api.imagga.com/v2/tags");
             client.Timeout = -1;

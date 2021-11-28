@@ -1099,19 +1099,19 @@
     ]
   },
   "packageFolders": {
-    "/Users/michaelwright/.nuget/packages/": {}
+    "/Users/michael/.nuget/packages/": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/Users/michaelwright/Downloads/Assignment 2 - WeblyAPI/API/API.csproj",
+      "projectUniqueName": "/Users/michael/Documents/School/Enterprise/A2/Assignment-2---WeblyAPI/API/API.csproj",
       "projectName": "API",
-      "projectPath": "/Users/michaelwright/Downloads/Assignment 2 - WeblyAPI/API/API.csproj",
-      "packagesPath": "/Users/michaelwright/.nuget/packages/",
-      "outputPath": "/Users/michaelwright/Downloads/Assignment 2 - WeblyAPI/API/obj/",
+      "projectPath": "/Users/michael/Documents/School/Enterprise/A2/Assignment-2---WeblyAPI/API/API.csproj",
+      "packagesPath": "/Users/michael/.nuget/packages/",
+      "outputPath": "/Users/michael/Documents/School/Enterprise/A2/Assignment-2---WeblyAPI/API/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "/Users/michaelwright/.nuget/NuGet/NuGet.Config"
+        "/Users/michael/.nuget/NuGet/NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net5.0"
@@ -1160,12 +1160,6 @@
         ],
         "assetTargetFallback": true,
         "warn": true,
-        "downloadDependencies": [
-          {
-            "name": "Microsoft.NETCore.App.Host.osx-x64",
-            "version": "[5.0.12, 5.0.12]"
-          }
-        ],
         "frameworkReferences": {
           "Microsoft.AspNetCore.App": {
             "privateAssets": "none"
