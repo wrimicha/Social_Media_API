@@ -52,5 +52,42 @@ namespace API.Controllers
             var response = ResponseHelper<ImagesDTO>.GetPagedResponse("/api/images", imageDTOList, pagenumber, 10, total);
             return Ok(response);
         }
+
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetPage(string id, [FromQuery] int pagenumber)
+        {
+
+            // var user = _context.User
+            //                 //.FindAsync(new Guid(id));
+            //                 .Include(x => x.Images)
+            //                 .ThenInclude(x => x.Tags)
+            //                 .FirstOrDefault(x => x.Id.Equals(new Guid(id)));
+
+            var result = _context.Image
+                            .OrderBy(x => x.PostingDate)
+                            .Include(x => x.Tags)
+                            .Include(x => x.User)
+                            .Skip((pagenumber - 1) * 10).Take(10)
+                            .FirstOrDefault(x => x.Id.Equals(new Guid(id)));
+
+
+            var tagList = new List<string>();
+
+            foreach(var tag in result.Tags){
+                tagList.Add(tag.Text.ToString());
+            }
+           
+            var imageDTO = new ImageDTO
+            {
+                Id = result.Id,
+                Url = result.Url,
+                Username = result.User.Name.ToString(),
+                Userid = result.User.Id.ToString(),
+                Tags = tagList
+            };
+
+            //var response = ResponseHelper<ImageDTO>.GetPagedResponse("/api/images", imageDTO);
+            return Ok(imageDTO);
+        }
     }
 }
