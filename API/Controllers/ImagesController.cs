@@ -29,12 +29,28 @@ namespace API.Controllers
         public async Task<IActionResult> GetPage([FromQuery] int pagenumber)
         {
             var result = _context.Image
+                .OrderBy(x => x.PostingDate)
+                .Include(x => x.User)
                 .Skip((pagenumber - 1) * 10).Take(10);
-            var total = await _context.Image.CountAsync();
 
-            var response = ResponseHelper<Image>.GetPagedResponse("/api/images", result, pagenumber, 10, total);
+            var total = await result.CountAsync();
+
+            var imageDTOList = new List<ImagesDTO>();
+
+            foreach (var image in result)
+            {
+                imageDTOList.Add(
+                    new ImagesDTO
+                    {
+                        Id = image.Id,
+                        Url = image.Url,
+                        Username = image.User.Name.ToString()
+                    }
+                );
+            }
+
+            var response = ResponseHelper<ImagesDTO>.GetPagedResponse("/api/images", imageDTOList, pagenumber, 10, total);
             return Ok(response);
         }
-
     }
 }

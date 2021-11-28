@@ -8,7 +8,7 @@ namespace API.Models.Responses
     public class Response<T>
     {
         public T Data { get; set; }
-        public string[] Actions { get; set; } //TODO: what is this
+        //public string[] Actions { get; set; } //TODO: what is this
         public Response(T data)
         {
             Data = data;

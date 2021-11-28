@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Mvc;
 using API.Models.DTOs;
 using API.Models.Entities;
 using API.Models;
+using API.Models.Responses;
+using API.Models.DTOs;
 using Microsoft.EntityFrameworkCore;
 using API.Models.Helpers;
 
@@ -25,11 +27,11 @@ namespace API.Controllers
             _context = context;
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetUsers()
-        {
-            return Ok(_context.User);
-        }
+        // [HttpGet]
+        // public async Task<IActionResult> GetUsers()
+        // {
+        //     return Ok(_context.User.Include(x => x.Images));
+        // }
 
 
         //TODO: set limit of returned images to 10
@@ -41,11 +43,46 @@ namespace API.Controllers
                             .Include(x => x.Images)
                             .ThenInclude(x => x.Tags)
                             .FirstOrDefault(x => x.Id.Equals(new Guid(id)));
-            return Ok(user);
+
+
+            var imageCount = user.Images.Count;
+
+            System.Collections.Generic.IEnumerable<API.Models.Entities.Image> userImages;
+
+            if (imageCount > 10)
+            {
+                userImages = user.Images
+                    .Skip((imageCount - 10)).Take(10);
+            }
+            else
+            {
+                userImages = user.Images;
+            }
+
+            var imageList = new List<string>();
+
+            foreach (var image in userImages)
+            {
+                imageList.Add(image.Url.ToString());
+            }
+
+            var userDTO = new UserDTO
+            {
+                Id = user.Id,
+                Email = user.Email,
+                Name = user.Name,
+                ImagesUrls = imageList
+            };
+
+            //var response = new UserDTO(userDTO.Id, userDTO.Name, userDTO.Email, userDTO.Images);
+            
+            var response = new Response<UserDTO>(userDTO);
+
+            return Ok(response);
         }
 
         [HttpPost]
-        public async Task<IActionResult> AddUser([FromQuery] string name, string email) //post request - must send me the RegisterDto
+        public async Task<IActionResult> AddUser([FromBody] string name, string email) //post request - must send me the RegisterDto
         {
             //var user = new User(email, name);
             var user = new User
@@ -64,10 +101,9 @@ namespace API.Controllers
         public async Task<IActionResult> GetUserById(string id)
         {
             var user = _context.User.FirstOrDefault(x => x.Id.Equals(new Guid(id)));
-                 
-                 
+
             var images = user.Images;
-                        
+
             return Ok(images);
         }
 
@@ -93,36 +129,46 @@ namespace API.Controllers
                             .ThenInclude(x => x.Tags)
                             .SingleOrDefault(x => x.Id.Equals(new Guid(id)));
 
+            //var user = await _context.User.FindAsync(new Guid(id));
+
 
             var tags = ImageHelper.GetTags(image.Url);
-        
+
             //var tagsList = new List<Tag>();
 
             // var imageObject = new Image
             // {
-                
+
             // }; 
 
-            image.Url = image.Url;
             image.User = user;
             image.PostingDate = DateTime.Now;
-
-            //Image.Tag = List<Tag>();
-
-            foreach(var tag in tags)
+            image.Tags = new List<Tag>();
+            foreach (var tag in tags)
             {
+                //var newTag = new Tag{Text = tag};
+                //image.Tags.Add(newTag);
+
                 var existingTag = _context.Tag.FirstOrDefault(x => x.Text.ToLower() == tag);
-                if (existingTag == null){
+                if (existingTag == null)
+                {
                     // tagsList.Add(newTag);
-                    var newTag = new Tag{Text = tag};
+
+
+                    //var Images = _context.Images.Include(x => x.Tags).Where(x => )
+
+
+                    //var newTag = new Tag{Text = tag, };
                     // await _context.Tag.AddAsync(newTag);
-                    image.Tags.Add(newTag);
-                    newTag.Images.Add(image);
+
+                    image.Tags.Add(new Tag { Text = tag });
+                    //newTag.Images.Add(image);
                 }
-                else{
+                else
+                {
                     //tagsList.Add(existingTag);
                     image.Tags.Add(existingTag);
-                    existingTag.Images.Add(image);
+                    //existingTag.Images.Add(image);
                     //existingTag.Image = imageObject;
                 }
             }
@@ -139,7 +185,8 @@ namespace API.Controllers
             user.Images.Add(image);
 
             await _context.SaveChangesAsync();
-            return Ok(user);
+            return Ok();
         }
+
     }
 }
