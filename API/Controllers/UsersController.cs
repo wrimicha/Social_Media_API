@@ -68,6 +68,34 @@ namespace API.Controllers
         }
 
 
+        [HttpGet("{id}/images")]
+        public async Task<IActionResult> GetUserImages(string id, int pagenumber = 1)
+        {
+            var result = _context.Image
+                .OrderBy(x => x.PostingDate)
+                .Skip((pagenumber - 1) * 10).Take(10);
+
+
+            var total = await _context.Image.CountAsync();
+
+            var userImageDTOList = new List<UserImagesDTO>();
+
+            foreach (var image in result)
+            {
+                userImageDTOList.Add(
+                    new UserImagesDTO
+                    {
+                        Id = image.Id,
+                        Url = image.Url,
+                    }
+                );
+            }
+
+            var response = ResponseHelper<UserImagesDTO>.GetPagedResponse("/api/users/" + id + "/images", userImageDTOList, pagenumber, 10, total);
+            return Ok(response);
+        }
+
+
         [HttpPost]
         public async Task<IActionResult> AddUser([FromBody] User user) //post request - must send me the RegisterDto
         {
@@ -84,14 +112,14 @@ namespace API.Controllers
         }
 
 
-        [HttpGet("{id}/images")]
-        public async Task<IActionResult> GetUserById(string id)
-        {
-            var user = _context.User.FirstOrDefault(x => x.Id.Equals(new Guid(id)));
+        // [HttpGet("{id}/images")]
+        // public async Task<IActionResult> GetUserById(string id)
+        // {
+        //     var user = _context.User.FirstOrDefault(x => x.Id.Equals(new Guid(id)));
 
-            //var images = user.Images;
-            return Ok(user.Images);
-        }
+        //     //var images = user.Images;
+        //     return Ok(user.Images);
+        // }
 
 
         [HttpPost("{id}/image")]
