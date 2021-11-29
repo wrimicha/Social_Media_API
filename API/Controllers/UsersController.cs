@@ -82,16 +82,16 @@ namespace API.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> AddUser([FromBody] string name, string email) //post request - must send me the RegisterDto
+        public async Task<IActionResult> AddUser([FromBody] User user) //post request - must send me the RegisterDto
         {
             //var user = new User(email, name);
-            var user = new User
-            {
-                Email = email,
-                Name = name,
-            };
+            // var user = new User
+            // {
+            //     Email = email,
+            //     Name = name,
+            // };
 
-            await _context.User.AddAsync(user);
+            await _context.User.AddAsync(new User{ Email = user.Email, Name = user.Name} );
             await _context.SaveChangesAsync();
             return Ok();
         }
@@ -102,9 +102,8 @@ namespace API.Controllers
         {
             var user = _context.User.FirstOrDefault(x => x.Id.Equals(new Guid(id)));
 
-            var images = user.Images;
-
-            return Ok(images);
+            //var images = user.Images;
+            return Ok(user.Images);
         }
 
 
@@ -130,7 +129,6 @@ namespace API.Controllers
                             .SingleOrDefault(x => x.Id.Equals(new Guid(id)));
 
             //var user = await _context.User.FindAsync(new Guid(id));
-
 
             var tags = ImageHelper.GetTags(image.Url);
 
