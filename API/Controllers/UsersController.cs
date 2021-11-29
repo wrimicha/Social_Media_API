@@ -39,25 +39,13 @@ namespace API.Controllers
         public async Task<IActionResult> GetUser(string id)
         {
             var user = _context.User
-                            //.FindAsync(new Guid(id));
                             .Include(x => x.Images)
                             .ThenInclude(x => x.Tags)
                             .FirstOrDefault(x => x.Id.Equals(new Guid(id)));
 
-
             var imageCount = user.Images.Count;
 
-            System.Collections.Generic.IEnumerable<API.Models.Entities.Image> userImages;
-
-            if (imageCount > 10)
-            {
-                userImages = user.Images
-                    .Skip((imageCount - 10)).Take(10);
-            }
-            else
-            {
-                userImages = user.Images;
-            }
+            var userImages = (imageCount > 10) ? user.Images.Skip((imageCount - 10)) : user.Images;
 
             var imageList = new List<string>();
 
@@ -73,13 +61,12 @@ namespace API.Controllers
                 Name = user.Name,
                 ImagesUrls = imageList
             };
-
-            //var response = new UserDTO(userDTO.Id, userDTO.Name, userDTO.Email, userDTO.Images);
             
             var response = new Response<UserDTO>(userDTO);
 
             return Ok(response);
         }
+
 
         [HttpPost]
         public async Task<IActionResult> AddUser([FromBody] User user) //post request - must send me the RegisterDto
