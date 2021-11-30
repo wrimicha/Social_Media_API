@@ -12,7 +12,6 @@ using Microsoft.EntityFrameworkCore;
 using API.Models.Helpers;
 
 
-
 namespace API.Controllers
 {
     [ApiController]
@@ -61,26 +60,27 @@ namespace API.Controllers
                 Name = user.Name,
                 ImagesUrls = imageList
             };
-            
+
             var response = new Response<UserDTO>(userDTO);
 
             return Ok(response);
         }
 
-
         [HttpGet("{id}/images")]
         public async Task<IActionResult> GetUserImages(string id, int pagenumber = 1)
         {
-            var result = _context.Image
-                .OrderBy(x => x.PostingDate)
-                .Skip((pagenumber - 1) * 10).Take(10);
 
+            var result = _context.User
+                            .Include(x => x.Images)
+                            .FirstOrDefault(x => x.Id.Equals(new Guid(id)));
 
-            var total = await _context.Image.CountAsync();
+            var pageImages = result.Images.Skip((pagenumber - 1) * 10).Take(10);
+
+            var total = result.Images.Count();
 
             var userImageDTOList = new List<UserImagesDTO>();
 
-            foreach (var image in result)
+            foreach(var image in pageImages)
             {
                 userImageDTOList.Add(
                     new UserImagesDTO
@@ -106,7 +106,7 @@ namespace API.Controllers
             //     Name = name,
             // };
 
-            await _context.User.AddAsync(new User{ Email = user.Email, Name = user.Name} );
+            await _context.User.AddAsync(new User { Email = user.Email, Name = user.Name });
             await _context.SaveChangesAsync();
             return Ok();
         }
@@ -200,6 +200,52 @@ namespace API.Controllers
             await _context.SaveChangesAsync();
             return Ok();
         }
+
+
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteUserById(string id)
+        {
+            var result = _context.User
+                .Include(x => x.Images)
+                .FirstOrDefault(x => x.Id.Equals(new Guid(id)));
+
+
+            // for(int i = 0; i < result.; i++)
+            // {							
+            // Console.WriteLine("Hi");
+            // }	
+
+            foreach (var image in result.Images)
+            {
+                _context.Image.Remove(image);
+                // var debug = image;
+            }
+
+
+
+
+            // var total = await _context.Image.CountAsync();
+
+            // var userImageDTOList = new List<UserImagesDTO>();
+
+            // foreach (var image in result)
+            // {
+            //     userImageDTOList.Add(
+            //         new UserImagesDTO
+            //         {
+            //             Id = image.Id,
+            //             Url = image.Url,
+            //         }
+            //     );
+            // }
+
+            // var response = ResponseHelper<UserImagesDTO>.GetPagedResponse("/api/users/" + id + "/images", userImageDTOList, pagenumber, 10, total);
+            return Ok();
+        }
+
+
+
 
     }
 }
