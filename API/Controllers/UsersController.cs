@@ -170,7 +170,6 @@ namespace API.Controllers
 
                     //var Images = _context.Images.Include(x => x.Tags).Where(x => )
 
-
                     //var newTag = new Tag{Text = tag, };
                     // await _context.Tag.AddAsync(newTag);
 
@@ -202,47 +201,86 @@ namespace API.Controllers
         }
 
 
+        //TODO:update my methods to single or default
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteUserById(string id)
+
+        public async Task<IActionResult> Delete(string id)
         {
-            var result = _context.User
-                .Include(x => x.Images)
-                .FirstOrDefault(x => x.Id.Equals(new Guid(id)));
-
-
-            // for(int i = 0; i < result.; i++)
-            // {							
-            // Console.WriteLine("Hi");
-            // }	
-
-            foreach (var image in result.Images)
-            {
-                _context.Image.Remove(image);
-                // var debug = image;
-            }
-
-
-
-
-            // var total = await _context.Image.CountAsync();
-
-            // var userImageDTOList = new List<UserImagesDTO>();
-
-            // foreach (var image in result)
-            // {
-            //     userImageDTOList.Add(
-            //         new UserImagesDTO
-            //         {
-            //             Id = image.Id,
-            //             Url = image.Url,
-            //         }
-            //     );
-            // }
-
-            // var response = ResponseHelper<UserImagesDTO>.GetPagedResponse("/api/users/" + id + "/images", userImageDTOList, pagenumber, 10, total);
+            User user = _context.User
+            .Include(x => x.Images)
+            .SingleOrDefault(x => x.Id == new Guid(id));
+            _context.RemoveRange(user.Images);
+            _context.Remove(user);
+            await _context.SaveChangesAsync();
             return Ok();
         }
+
+
+        // [HttpDelete("{id}")]
+        // public async Task<IActionResult> DeleteUserById(string id)
+        // {
+        //     var result = _context.User
+        //         .Include(x => x.Images)
+        //         .ThenInclude(x => x.Tags)
+        //         .FirstOrDefault(x => x.Id.Equals(new Guid(id)));
+
+        //     // var userTags = _context.Tags
+        //     //                     .Where()
+
+        //     // foreach(var image in result.Images)
+        //     // {
+        //     //     var tags = image.Tags;
+        //     //     foreach(var tag in tags)
+        //     //     {
+        //     //         if(tag.Images.Count == 1)
+        //     //         {
+        //     //             _context.Tag.Remove(tag);
+        //     //         }
+        //     //     }
+        //     // }
+        //     //var tagsFromResult = result.Images[0].Tags;
+
+
+        //     //var tags = result.
+        //     //TODO: use this to debig the Images - check if landscape shows reference to null image
+        //     var images = _context.Tag.Include(x=>x.Images);
+
+
+        //     foreach(var image in result.Images)
+        //     {
+        //         _context.Tag.Clear(image.Tags);
+        //     }
+
+        //     await _context.SaveChangesAsync();
+
+
+        //     _context.Image.RemoveRange(result.Images);
+
+        //     _context.Image.RemoveRange(result.Images);
+
+        //     _context.User.Remove(result);
+
+           
+        //     // var total = await _context.Image.CountAsync();
+
+        //     // var userImageDTOList = new List<UserImagesDTO>();
+
+        //     // foreach (var image in result)
+        //     // {
+        //     //     userImageDTOList.Add(
+        //     //         new UserImagesDTO
+        //     //         {
+        //     //             Id = image.Id,
+        //     //             Url = image.Url,
+        //     //         }
+        //     //     );
+        //     // }
+        //     _context.SaveChanges();
+
+        //     // var response = ResponseHelper<UserImagesDTO>.GetPagedResponse("/api/users/" + id + "/images", userImageDTOList, pagenumber, 10, total);
+        //     return Ok();
+        // }
 
 
 

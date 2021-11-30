@@ -65,7 +65,7 @@ namespace API.Controllers
                             .OrderBy(x => x.PostingDate)
                             .Include(x => x.Tags)
                             .Include(x => x.User)
-                            .Skip((pagenumber - 1) * 10).Take(10)
+                            //.Skip((pagenumber - 1) * 10).Take(10)
                             .FirstOrDefault(x => x.Id.Equals(new Guid(id)));
 
 
@@ -131,17 +131,20 @@ namespace API.Controllers
             var result = _context.Tag
                             .Include(x => x.Images)
                             .OrderByDescending(x => x.Images.Count)
-                            .Take(5);
+                            .ThenBy(x => x.Text)
+                            .Take(30);
 
             var poptags = new List<TagCountDTO>();
 
-            foreach(var tag in result){
+            foreach (var tag in result)
+            {
                 poptags.Add(
-                     new TagCountDTO {
-                        Tag = tag.Text,
-                        Count = tag.Images.Count.ToString()
-                    }
-                );                 
+                     new TagCountDTO
+                     {
+                         Tag = tag.Text,
+                         Count = tag.Images.Count.ToString()
+                     }
+                );
             }
 
             return Ok(poptags);
