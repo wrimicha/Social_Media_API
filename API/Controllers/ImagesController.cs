@@ -131,8 +131,8 @@ namespace API.Controllers
             var result = _context.Tag
                             .Include(x => x.Images)
                             .OrderByDescending(x => x.Images.Count)
-                            .ThenBy(x => x.Text)
-                            .Take(30);
+                            .ThenBy(x => x.Text);
+                            //.Take(5);
 
             var poptags = new List<TagCountDTO>();
 
