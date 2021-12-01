@@ -90,6 +90,9 @@ namespace API.Controllers
         [HttpPost]
         public async Task<IActionResult> AddUser([FromBody] User user) //post request - must send me the RegisterDto
         {
+
+            IsValidEmail(string email)
+
             await _context.User.AddAsync(new User { Email = user.Email, Name = user.Name });
             await _context.SaveChangesAsync();
             return Ok();
@@ -117,7 +120,7 @@ namespace API.Controllers
                 else
                     image.Tags.Add(existingTag); 
             }
-            
+
             user.Images.Add(image);
             await _context.SaveChangesAsync();
             return Ok();

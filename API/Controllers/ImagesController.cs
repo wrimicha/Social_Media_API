@@ -99,7 +99,6 @@ namespace API.Controllers
                 Userid = result.User.Id.ToString(),
                 Tags = tagList
             };
-
             return Ok(imageDTO);
         }
 
@@ -112,6 +111,16 @@ namespace API.Controllers
                 .Include(x => x.Tags)
                 .Where(x => x.Tags.Any(y => y.Text.ToLower().Equals(tag.ToLower())))
                 .Skip((pagenumber - 1) * 10).Take(10);
+
+            if (result.Count() == 0)
+            {
+                return NotFound(new ErrorDTO
+                {
+                    Status = "404",
+                    Title = "No tags found.",
+                    Detail = "There are currently no images with the tag " + tag
+                });
+            }
 
             var total = await result.CountAsync();
 
