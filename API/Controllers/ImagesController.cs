@@ -8,36 +8,32 @@ using API.Models.Entities;
 using API.Models;
 using API.Models.Responses;
 using Microsoft.EntityFrameworkCore;
-
+using System.Text.RegularExpressions;
 
 
 namespace API.Controllers
 {
+
     [ApiController]
     [Route("api/[controller]")]
     public class ImagesController : ControllerBase
     {
-
         private readonly DataContext _context;
-
         public ImagesController(DataContext context)
         {
             _context = context;
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetPage([FromQuery] int pagenumber, string tag = null)
-        {
 
+        [HttpGet]
+        public async Task<IActionResult> GetPage([FromQuery] int pagenumber = 1, string tag = null)
+        {
             var result = _context.Image
                 .OrderBy(x => x.PostingDate)
                 .Include(x => x.User)
                 .Skip((pagenumber - 1) * 10).Take(10);
 
-
             var total = await result.CountAsync();
-
-            //var total = await result.CountAsync();
 
             var imageDTOList = new List<ImagesDTO>();
 
@@ -58,16 +54,35 @@ namespace API.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetPage(string id, [FromQuery] int pagenumber)
+        public async Task<IActionResult> GetPage(string id, [FromQuery] int pagenumber = 1)
         {
 
-            var result = _context.Image
-                            .OrderBy(x => x.PostingDate)
-                            .Include(x => x.Tags)
-                            .Include(x => x.User)
-                            //.Skip((pagenumber - 1) * 10).Take(10)
-                            .FirstOrDefault(x => x.Id.Equals(new Guid(id)));
+            Regex rgx = new Regex(@"^[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{12}$");
 
+            if (!rgx.IsMatch(id))
+            {
+                return BadRequest(new ErrorDTO
+                {
+                    Status = "400",
+                    Title = "The id format is not correct.",
+                    Detail = "Please enter an id following the XXXXXXXX-XXXX-XXXX-XXXXXXXXXXXX format"
+                });
+            }
+            var result = _context.Image
+                        .OrderBy(x => x.PostingDate)
+                        .Include(x => x.Tags)
+                        .Include(x => x.User)
+                        .FirstOrDefault(x => x.Id.Equals(new Guid(id)));
+
+            if (result == null)
+            {
+                return NotFound(new ErrorDTO
+                {
+                    Status = "404",
+                    Title = "Id does not exist",
+                    Detail = "Ensure that a valid id which corresponds to an existing user in the system is provided"
+                });
+            }
 
             var tagList = new List<string>();
 
@@ -85,14 +100,12 @@ namespace API.Controllers
                 Tags = tagList
             };
 
-            //var response = ResponseHelper<ImageDTO>.GetPagedResponse("/api/images", imageDTO);
             return Ok(imageDTO);
         }
 
         [HttpGet("byTag")]
         public async Task<IActionResult> GetByTag([FromQuery] int pagenumber = 1, string tag = null)
         {
-
             var result = _context.Image
                 .OrderBy(x => x.PostingDate)
                 .Include(x => x.User)
@@ -104,11 +117,8 @@ namespace API.Controllers
 
             var imageDTOList = new List<ImagesDTO>();
 
-            //var tagsList = new List<string>();
-
             foreach (var image in result)
             {
-                //tagsList.Add(image.Tags.Text.toString());
                 imageDTOList.Add(
                     new ImagesDTO
                     {
@@ -127,12 +137,11 @@ namespace API.Controllers
         [HttpGet("populartags")]
         public async Task<IActionResult> PopularTags()
         {
-
             var result = _context.Tag
                             .Include(x => x.Images)
                             .OrderByDescending(x => x.Images.Count)
-                            .ThenBy(x => x.Text);
-                            //.Take(5);
+                            .ThenBy(x => x.Text)
+                            .Take(5);
 
             var poptags = new List<TagCountDTO>();
 

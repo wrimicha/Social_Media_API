@@ -17,6 +17,5 @@ namespace API.Models.Responses
         {
             this.Data = data;
         }
-        
     }
 }
