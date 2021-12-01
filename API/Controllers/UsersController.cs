@@ -91,7 +91,7 @@ namespace API.Controllers
         public async Task<IActionResult> AddUser([FromBody] User user) //post request - must send me the RegisterDto
         {
 
-            IsValidEmail(string email)
+            // IsValidEmail(string email)
 
             await _context.User.AddAsync(new User { Email = user.Email, Name = user.Name });
             await _context.SaveChangesAsync();
