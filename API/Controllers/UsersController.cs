@@ -10,7 +10,8 @@ using API.Models.Responses;
 using API.Models.DTOs;
 using Microsoft.EntityFrameworkCore;
 using API.Models.Helpers;
-
+using System.Text.RegularExpressions;
+using System.ComponentModel.DataAnnotations;
 
 namespace API.Controllers
 {
@@ -90,28 +91,50 @@ namespace API.Controllers
         [HttpPost]
         public async Task<IActionResult> AddUser([FromBody] User user) //post request - must send me the RegisterDto
         {
-
-            // IsValidEmail(string email)
-
+            var email_format = new EmailAddressAttribute();
+            if(!email_format.IsValid(user.Email))
+            {
+                return BadRequest(new ErrorDTO
+                {
+                    Status = "400",
+                    Title = "Email address is not a valid format",
+                    Detail = "Please enter an email address which is in t"
+                });
+            }
+            if(_context.User.SingleOrDefault(x => x.Email.ToLower().Equals(user.Email)) != null)
+            {
+                return BadRequest(new ErrorDTO
+                {
+                    Status = "400",
+                    Title = "Email address already exists",
+                    Detail = "Please enter a new email address"
+                });
+            }
             await _context.User.AddAsync(new User { Email = user.Email, Name = user.Name });
             await _context.SaveChangesAsync();
-            return Ok();
+            return Ok(); 
         }
 
 
         [HttpPost("{id}/image")]
         public async Task<IActionResult> AddUserImage(string id, [FromBody] Image image)
         {
+
+            //get the user by id
             var user = _context.User
                             .Include(x => x.Images)
                             .ThenInclude(x => x.Tags)
                             .SingleOrDefault(x => x.Id.Equals(new Guid(id)));
 
+            //get tags for the image
             var tags = ImageHelper.GetTags(image.Url);
 
+            //build the image object from the user
             image.User = user;
             image.PostingDate = DateTime.Now;
             image.Tags = new List<Tag>();
+
+            //assign tags to list of tags
             foreach (var tag in tags)
             {
                 var existingTag = _context.Tag.FirstOrDefault(x => x.Text.ToLower() == tag);
@@ -120,10 +143,32 @@ namespace API.Controllers
                 else
                     image.Tags.Add(existingTag); 
             }
-
+            
+            //add image to user
             user.Images.Add(image);
+
+            var imageCount = user.Images.Count;
+
+            var userImages = (imageCount > 10) ? user.Images.Skip((imageCount - 10)) : user.Images;
+
+            var imageList = new List<string>();
+            
+            foreach (var img in userImages)
+            {
+                imageList.Add(img.Url.ToString());
+            }
+
+            //create the user DTO object
+            var userDTO = new UserDTO
+            {
+                Id = user.Id,
+                Email = user.Email,
+                Name = user.Name,
+                ImagesUrls = imageList
+            };
+
             await _context.SaveChangesAsync();
-            return Ok();
+            return Ok(userDTO);
         }
 
 
